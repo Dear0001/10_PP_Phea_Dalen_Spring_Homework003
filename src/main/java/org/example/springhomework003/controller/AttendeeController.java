@@ -1,8 +1,7 @@
 package org.example.springhomework003.controller;
 
-import org.apache.tomcat.util.http.parser.HttpParser;
-import org.example.springhomework003.exception.AllNotFoundException;
-import org.example.springhomework003.exception.AttendeeNotFoundException;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import org.example.springhomework003.model.Attendee;
 import org.example.springhomework003.model.dto.request.AttendeeRequest;
 import org.example.springhomework003.model.dto.response.ApiResponse;
@@ -24,10 +23,13 @@ public class AttendeeController {
         this.attendeeService = attendeeService;
     }
 
-    @GetMapping("getAllAttendees")
-    public ResponseEntity<?> getAllVenues(@RequestParam(required = false, defaultValue = "1") int numberPage,
-                                          @RequestParam(required = false, defaultValue = "5") int NumberSize) {
-        List<Attendee> attendees = attendeeService.getAllAttendees(numberPage, NumberSize);
+    @GetMapping
+    public ResponseEntity<?> getAllVenues(
+            @RequestParam(defaultValue = "1")
+            @Positive(message = "must be greater than 0") int numberPage,
+            @Positive(message = "must be greater than 0")
+            @RequestParam(defaultValue = "3") int numberSize) {
+        List<Attendee> attendees = attendeeService.getAllAttendees(numberPage, numberSize);
         return ResponseEntity.ok(
                 ApiResponse.builder()
                         .message("Get all Attendees Successfully.")
@@ -40,7 +42,6 @@ public class AttendeeController {
     }
     @GetMapping("/{id}")
     public ResponseEntity<?> getAttendeeById(@PathVariable Integer id){
-        try {
             Attendee attendee = attendeeService.getAttendeeById(id);
             return ResponseEntity.ok(
                     ApiResponse.builder()
@@ -51,17 +52,14 @@ public class AttendeeController {
                             .timestamp(LocalDateTime.now())
                             .build()
             );
-        }catch (Exception e) {
-            throw new AllNotFoundException("Attendee with id " + id + " does not found.");
-        }
     }
 
-    @PostMapping("/post")
-    public ResponseEntity<?> createAttendee(@RequestBody AttendeeRequest attendeeRequest) {
+    @PostMapping
+    public ResponseEntity<?> createAttendee(@Valid @RequestBody AttendeeRequest attendeeRequest) {
         Attendee attendee = attendeeService.postAttendee(attendeeRequest);
         return ResponseEntity.ok(
                 ApiResponse.builder()
-                        .message("Created Attendee Successfully.")
+                        .message("The attendee has been successfully added.")
                         .code(201)
                         .payload(attendee)
                         .status(HttpStatus.OK)
@@ -71,8 +69,7 @@ public class AttendeeController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateAttendee(@PathVariable Integer id, AttendeeRequest attendeeRequest){
-        try {
+    public ResponseEntity<?> updateAttendee(@PathVariable Integer id, @Valid AttendeeRequest attendeeRequest){
             Attendee attendee = attendeeService.updateAttendee(id, attendeeRequest);
             return ResponseEntity.ok(
                     ApiResponse.builder()
@@ -83,13 +80,9 @@ public class AttendeeController {
                             .timestamp(LocalDateTime.now())
                             .build()
             );
-        }catch (Exception e) {
-            throw new AllNotFoundException("Attendee with id " + id + " does not found.");
-        }
     }
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteAttendees(@PathVariable Integer id){
-        try {
             attendeeService.deleteAttendee(id);
             return ResponseEntity.ok(
                     ApiResponse.builder()
@@ -100,9 +93,6 @@ public class AttendeeController {
                             .timestamp(LocalDateTime.now())
                             .build()
             );
-        }catch (Exception e) {
-            throw new AllNotFoundException("Attendee with id " + id + " does not found.");
-        }
     }
 
 }

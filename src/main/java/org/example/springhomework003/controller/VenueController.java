@@ -1,19 +1,26 @@
 package org.example.springhomework003.controller;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
 import org.example.springhomework003.exception.AllNotFoundException;
 import org.example.springhomework003.model.Venue;
 import org.example.springhomework003.model.dto.request.VenueRequest;
 import org.example.springhomework003.model.dto.response.ApiResponse;
 import org.example.springhomework003.service.VenueService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v2/venue")
+@RequestMapping("/api/v2/venues")
 public class VenueController {
     private final VenueService venueService;
 
@@ -21,23 +28,28 @@ public class VenueController {
         this.venueService = venueService;
     }
 
-    @GetMapping("getAllVenues")
-    public ResponseEntity<?> getAllVenues(@RequestParam(required = false, defaultValue = "1") int numberPage,
-                                          @RequestParam(required = false, defaultValue = "5") int NumberSize) {
-        List<Venue> venue = venueService.getAllVenues(numberPage, NumberSize);
+    @GetMapping
+    public ResponseEntity<?> getAllVenues(
+            @RequestParam(defaultValue = "1")
+            @Positive(message = "must be greater than 0") int numberPage,
+            @Positive(message = "must be greater than 0")
+            @RequestParam(defaultValue = "3") int numberSize) {
+
+        List<Venue> venues = venueService.getAllVenues(numberPage, numberSize);
+
         return ResponseEntity.ok(
                 ApiResponse.builder()
                         .message("Get all Venues Successfully.")
                         .code(200)
-                        .payload(venue)
+                        .payload(venues)
                         .status(HttpStatus.OK)
                         .timestamp(LocalDateTime.now())
                         .build()
         );
     }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getVenueById(@PathVariable Integer id) {
-        try {
             Venue venue = venueService.getVenueById(id);
             return ResponseEntity.ok(
                     ApiResponse.builder()
@@ -48,17 +60,14 @@ public class VenueController {
                             .timestamp(LocalDateTime.now())
                             .build()
             );
-        }catch (Exception e){
-            throw new AllNotFoundException("Venue with id " + id + " does not exist.");
         }
-    }
 
-    @PostMapping("postVenue")
-    public ResponseEntity<?> postVenue(@RequestBody VenueRequest venueRequest){
+    @PostMapping
+    public ResponseEntity<?> postVenue(@Valid @RequestBody VenueRequest venueRequest){
         Venue venue = venueService.postVenue(venueRequest);
         return ResponseEntity.ok(
                 ApiResponse.builder()
-                        .message("Post Venue Successfully.")
+                        .message("The venue has been successfully added.")
                         .code(201)
                         .payload(venue)
                         .status(HttpStatus.CREATED)
@@ -68,8 +77,7 @@ public class VenueController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateVenue(@PathVariable Integer id, @RequestBody VenueRequest venueRequest ){
-        try {
+    public ResponseEntity<?> updateVenue(@PathVariable Integer id,@Valid @RequestBody VenueRequest venueRequest ){
             Venue venue = venueService.updateVenue(id, venueRequest);
             return ResponseEntity.ok(
                     ApiResponse.builder()
@@ -80,14 +88,10 @@ public class VenueController {
                             .timestamp(LocalDateTime.now())
                             .build()
             );
-        }catch (Exception e){
-            throw new AllNotFoundException("Venue with id " + id + " does not exist.");
-        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteVenue(@PathVariable Integer id){
-        try {
             venueService.deleteVenue(id);
             return ResponseEntity.ok(
                     ApiResponse.builder()
@@ -98,9 +102,5 @@ public class VenueController {
                             .timestamp(LocalDateTime.now())
                             .build()
             );
-        }catch (Exception e){
-            throw new AllNotFoundException("Venue with id " + id + " does not exist.");
-
-        }
     }
 }

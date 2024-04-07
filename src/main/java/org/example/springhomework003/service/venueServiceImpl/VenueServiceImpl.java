@@ -17,6 +17,7 @@ public class VenueServiceImpl implements VenueService {
         this.venueRepository = venueRepository;
     }
 
+
     @Override
     public List<Venue> getAllVenues(int numberPage, int numberSize) {
         return venueRepository.getAllVenues(numberPage, numberSize);
@@ -47,8 +48,9 @@ public class VenueServiceImpl implements VenueService {
 
     @Override
     public void deleteVenue(Integer id) {
-        if( venueRepository.getVenueById(id) == null){
-            throw new AllNotFoundException("Venue with id " + id + " does not exist.");
+        if(venueRepository.getVenueById(id) == null){
+            throw new AllNotFoundException("Venue with id " + id + " does not found.");
         }
+        venueRepository.deleteVenue(id);
     }
 }

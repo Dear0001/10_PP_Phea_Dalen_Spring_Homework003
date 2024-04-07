@@ -9,31 +9,29 @@ import java.util.List;
 @Mapper
 public interface AttendeeRepository {
     @Select("""
-    SELECT * FROM attendees
+    SELECT * FROM attendees ORDER BY id
     LIMIT #{numberSize}
     OFFSET #{numberSize} * (#{numberPage} -1)
     """)
-    @Result(property = "attendeeId", column = "id")
-    @Result(property = "attendeeName", column = "attendees_name")
-    @Result(property = "attendeeEmail", column = "email")
+    @Results(id = "attendeeResultMap", value = {
+            @Result(property = "attendeeId", column = "id"),
+            @Result(property = "attendeeName", column = "attendees_name"),
+            @Result(property = "attendeeEmail", column = "email")
+    })
     List<Attendee> getAllAttendees(int numberPage, int numberSize);
 
     @Select("""
     SELECT * FROM attendees
     WHERE id = #{id}
     """)
-    @Result(property = "attendeeId", column = "id")
-    @Result(property = "attendeeName", column = "attendees_name")
-    @Result(property = "attendeeEmail", column = "email")
+    @ResultMap("attendeeResultMap")
     Attendee getAttendeeById(Integer id);
     @Select("""
     INSERT INTO attendees (attendees_name, email)
     VALUES (#{attendeeRequest.attendeeName}, #{attendeeRequest.attendeeEmail})
     RETURNING *
     """)
-    @Result(property = "attendeeId", column = "id")
-    @Result(property = "attendeeName", column = "attendees_name")
-    @Result(property = "attendeeEmail", column = "email")
+    @ResultMap("attendeeResultMap")
     Attendee postAttendee(@Param("attendeeRequest") AttendeeRequest attendeeRequest);
 
     @Select("""
@@ -42,18 +40,14 @@ public interface AttendeeRepository {
     WHERE id = #{id}
     RETURNING *
     """)
-    @Result(property = "attendeeId", column = "id")
-    @Result(property = "attendeeName", column = "attendees_name")
-    @Result(property = "attendeeEmail", column = "email")
+    @ResultMap("attendeeResultMap")
     Attendee updateAttendee(@Param("id") Integer id, @Param("attendee") AttendeeRequest attendeeRequest);
 
     @Delete("""
     DELETE FROM attendees
     WHERE id = #{id}
     """)
-    @Result(property = "attendeeId", column = "id")
-    @Result(property = "attendeeName", column = "attendees_name")
-    @Result(property = "attendeeEmail", column = "email")
+    @ResultMap("attendeeResultMap")
     void deleteAttendee(Integer id);
 
    @Select("""
@@ -62,10 +56,10 @@ public interface AttendeeRepository {
         JOIN attendees_events ae ON a.id = ae.attendee_id
         JOIN events e ON ae.event_id = e.id
         WHERE ae.event_id = #{id}
-""")
-   @Result(property = "attendeeId", column = "id")
-   @Result(property = "attendeeName", column = "attendees_name")
-   @Result(property = "attendeeEmail", column = "email")
+    """)
+   @ResultMap("attendeeResultMap")
    List<Attendee> getAllAttendList(Integer id);
 
+    @Select("SELECT COUNT(*) FROM attendees WHERE id = #{attendeeId}")
+    int countAttendeeById(@Param("attendeeId") Integer attendeeId);
 }

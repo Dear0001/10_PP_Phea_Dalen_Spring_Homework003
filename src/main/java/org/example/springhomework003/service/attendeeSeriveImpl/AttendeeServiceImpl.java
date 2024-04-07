@@ -39,7 +39,7 @@ public class AttendeeServiceImpl implements AttendeeService {
 
     @Override
     public Attendee updateAttendee(Integer id, AttendeeRequest attendeeRequest) {
-        Attendee attendee = attendeeRepository.getAttendeeById(id);
+        Attendee attendee = attendeeRepository.updateAttendee(id,attendeeRequest);
         if(attendee == null){
             throw new AllNotFoundException("Attendee with id " + id + " does not found.");
         }
@@ -51,6 +51,7 @@ public class AttendeeServiceImpl implements AttendeeService {
         if(attendeeRepository.getAttendeeById(id) == null){
             throw new AllNotFoundException("Attendee with id " + id + " does not found.");
         }
+        attendeeRepository.deleteAttendee(id);
     }
 
 }

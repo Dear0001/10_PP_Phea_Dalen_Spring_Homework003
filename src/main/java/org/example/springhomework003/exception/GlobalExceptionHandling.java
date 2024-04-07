@@ -1,11 +1,17 @@
 package org.example.springhomework003.exception;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.constraints.Positive;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -39,6 +45,26 @@ public class GlobalExceptionHandling {
         problemDetail.setTitle("Bad Request");
         problemDetail.setProperty("errors", errors);
         problemDetail.setProperty("timestamp", LocalDateTime.now());
+        return problemDetail;
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ProblemDetail handleMethodValidationException(HandlerMethodValidationException e) {
+        HashMap<String, String> errors = new HashMap<>();
+
+        for (var parameterError : e.getAllValidationResults()) {
+            String parameterName = parameterError.getMethodParameter().getParameterName();
+            for (var error : parameterError.getResolvableErrors()) {
+                errors.put(parameterName, error.getDefaultMessage());
+            }
+        }
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                "Invalid request"
+        );
+        problemDetail.setTitle("Bad Request");
+        problemDetail.setProperty("timestamp", LocalDateTime.now());
+        problemDetail.setProperty("error", errors);
         return problemDetail;
     }
 

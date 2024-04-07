@@ -9,8 +9,9 @@ import java.util.List;
 @Mapper
 public interface VenueRepository {
     @Select("""
-    SELECT * FROM venues
-    LIMIT #{numberSize} OFFSET #{numberSize} * (#{numberPage} -1)
+    SELECT * FROM venues ORDER BY venue_id
+    LIMIT #{numberSize}
+    OFFSET #{numberSize} * (#{numberPage} -1)
     """)
     @Result(property = "venueId", column = "venue_id")
     @Result(property = "venueName", column = "venue_name")
@@ -28,7 +29,7 @@ SELECT * FROM venues
     Venue getVenueById(Integer id);
 
     @Select("""
-    INSERT INTO venues (venue_name, venue_location) 
+    INSERT INTO venues (venue_name, venue_location)
     VALUES (#{venueRequest.venueName}, #{venueRequest.venueLocation})
     RETURNING *
     """)
@@ -53,4 +54,7 @@ SELECT * FROM venues
     WHERE venue_id = #{id}
     """)
     void deleteVenue(Integer id);
+
+    @Select("SELECT COUNT(*) FROM venues WHERE venue_id = #{venueId}")
+    int countVenueById(@Param("venueId") Integer venueId);
 }
